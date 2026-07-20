@@ -1,4 +1,4 @@
-# NGO AI Inquiry Triage Automation
+# NGO AI Enquiry Triage Automation
 
 An AI-powered workflow built with n8n that automatically triages incoming
 NGO inquiries — classifying them by type and urgency, drafting personalized
@@ -40,7 +40,7 @@ Form Trigger → AI Classification (Groq) → Parse Output → Route by Urgency
 ## Screenshots
 
 ![Full workflow](screenshots/workflow.png)
-![Google Sheet log](screenshots/sheet.png)
+![Google Sheet log](screenshots/sheets.png)
 ![Auto-reply email received](screenshots/email.png)
 
 ## Demo Video
