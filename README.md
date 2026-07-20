@@ -1,4 +1,4 @@
-# NGO AI Enquiry Triage Automation
+# NGO Enquiry Triage Automation
 
 An AI-powered workflow built with n8n that automatically triages incoming
 NGO inquiries — classifying them by type and urgency, drafting personalized
