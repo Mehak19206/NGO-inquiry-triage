@@ -1,0 +1,526 @@
+{
+  "name": "NGO Enquiry Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "NGO Inquiry Form",
+        "formDescription": "Get to work with us ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Message",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "99a488ad-c965-44ef-ae77-50740af0f6a2",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        112
+      ],
+      "webhookId": "af1db888-0873-4de6-8df5-6dc3d21cc2d0"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Name: {{ $json.Name }}\nEmail: {{ $json.Email }}\nMessage: {{ $json.Message }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an intake assistant for a local NGO. Return ONLY valid JSON, no markdown, no explanation — just this exact structure: {   \"category\": \"volunteer\" | \"donation\" | \"complaint\" | \"media\" | \"general\",   \"urgency\": \"low\" | \"medium\" | \"high\",   \"draft_reply\": \"a short, warm, personalized reply to the sender\" }"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "91e03a8c-b4e6-4650-b4be-66991485d5ad",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "47fed25d-cd1c-41a6-80f0-2d9b0810c05d",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        304,
+        336
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "zNsiTBHUYVbQqLvB",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.text;\nconst parsed = JSON.parse(raw);\n\nreturn {\n  json: {\n    name: $('On form submission').first().json.Name,\n    email: $('On form submission').first().json.Email,\n    message: $('On form submission').first().json.Message,\n    category: parsed.category,\n    urgency: parsed.urgency,\n    draft_reply: parsed.draft_reply\n  }\n};"
+      },
+      "id": "1d72ee25-44ab-453d-aa33-37e118bb1aeb",
+      "name": "Code in JavaScript",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bf3f2628-b014-4008-9f4f-36429494b668",
+              "leftValue": "={{ $json.urgency }}",
+              "rightValue": "high",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        784,
+        112
+      ],
+      "id": "6d9acd32-b7d9-424c-8b70-6080a9f1f778",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "18_dKfiJv2ARLmYqSePCBl6whBZA81NU9FBB4drwlK1E",
+          "mode": "list",
+          "cachedResultName": "NGO Enquiry Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18_dKfiJv2ARLmYqSePCBl6whBZA81NU9FBB4drwlK1E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheet 01",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18_dKfiJv2ARLmYqSePCBl6whBZA81NU9FBB4drwlK1E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Email": "={{ $json.email }}",
+            "Message": "={{ $json.message }}",
+            "Category": "={{ $json.category }}",
+            "Urgency": "={{ $json.urgency }}",
+            "Reply": "={{ $json.draft_reply }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply",
+              "displayName": "Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        48
+      ],
+      "id": "8de86f3e-dedc-414e-8308-6da5cca44f8a",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "C1fCK9I3N8Jh7P4B",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "18_dKfiJv2ARLmYqSePCBl6whBZA81NU9FBB4drwlK1E",
+          "mode": "list",
+          "cachedResultName": "NGO Enquiry Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18_dKfiJv2ARLmYqSePCBl6whBZA81NU9FBB4drwlK1E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheet 01",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18_dKfiJv2ARLmYqSePCBl6whBZA81NU9FBB4drwlK1E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Email": "={{ $json.email }}",
+            "Message": "={{ $json.message }}",
+            "Category": "={{ $json.category }}",
+            "Urgency": "={{ $json.urgency }}",
+            "Reply": "={{ $json.draft_reply }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply",
+              "displayName": "Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        208
+      ],
+      "id": "f38ab46d-e6f5-420d-87e6-46d895db8bbe",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "C1fCK9I3N8Jh7P4B",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Thank you for reaching out",
+        "emailType": "text",
+        "message": "={{ $json.Reply }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        48
+      ],
+      "id": "00da761e-cf9c-4180-b23f-cab0519c90da",
+      "name": "Send a message",
+      "webhookId": "4175a392-a657-4a15-a032-5cd1ee7fbd9d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "65yru1m2urSMuPdZ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "= {{ $json.Email }}",
+        "subject": "Thank you for reaching out",
+        "emailType": "text",
+        "message": "={{ $json.Reply }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        208
+      ],
+      "id": "4bbaf544-d35f-4549-995b-c1888d26a002",
+      "name": "Send a message1",
+      "webhookId": "ad5e2aec-0648-4d81-b36a-8ee141e4b3bd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "65yru1m2urSMuPdZ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "pray08819@gmail.com",
+        "subject": "=⚠️ Urgent NGO Inquiry - {{ $json.Category }}",
+        "emailType": "text",
+        "message": "=Urgent inquiry received:  Name: {{ $json.Name }} Email: {{ $json.Email }} Category: {{ $json.Category }} Message: {{ $json.Message }}  Please follow up directly.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        64
+      ],
+      "id": "31207241-6681-4410-a756-4a6655cf80a3",
+      "name": "Send a message2",
+      "webhookId": "b19d4e62-8eaf-482b-841b-e6fdc0417185",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "65yru1m2urSMuPdZ",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "eb961aa5-d1f4-453e-a408-afc95238d72a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7687636700c31f6cb4f98c279d3d800df59a45582e5337d3c996e65e083a8ca9"
+  },
+  "nodeGroups": [],
+  "id": "Y7pvS6Nj96JxYJQF",
+  "tags": []
+}
